@@ -1,9 +1,15 @@
-// add "type": "module" to your package.json to run this with node
+// add "type": "module" to your package.json to run this with node or name the file with extension .mjs to prevent writing existing .js files
+
 import { LimitOrder, MakerTraits, Address } from "@1inch/limit-order-sdk"
 import { Wallet } from 'ethers'
 import { Api, getLimitOrderV4Domain } from "@1inch/limit-order-sdk"
-const { AxiosProviderConnector } = require('@1inch/limit-order-sdk/axios');
-require('dotenv').config();
+import { AxiosProviderConnector } from '@1inch/limit-order-sdk/axios';
+import 'dotenv/config';
+
+// ERC20 Token standard ABI for the approve function
+const erc20AbiFragment = [
+    "function approve(address spender, uint256 amount) external returns (bool)"
+];
 
 (async () => {
 
@@ -14,6 +20,25 @@ require('dotenv').config();
     const maker = new Wallet(privKey)
     const expiresIn = 120n // 2m
     const expiration = BigInt(Math.floor(Date.now() / 1000)) + expiresIn
+
+    //Orders must call the approve function prior to being submitted
+    // Initialize ethers provider
+    const provider = new JsonRpcProvider("http://ethereum-rpc.publicnode.com");
+    const makerWallet = maker.connect(provider);
+
+    // Approve the makerAsset contract to spend on behalf of the maker
+    const makerAssetContract = new Contract(makerAsset, erc20AbiFragment, makerWallet);
+    const domain = getLimitOrderV4Domain(chainId);
+
+    console.log('Approving makerAsset spend...', domain.verifyingContract, makerAsset);
+    try {
+        const approveTx = await makerAssetContract.approve(domain.verifyingContract, makingAmount);
+        await approveTx.wait(); // Wait for the transaction to be mined
+        console.log('Approval successful');
+    } catch (error) {
+        console.error('Error in approving makerAsset spend:', error);
+        return { success: false, reason: "Failed to approve makerAsset spend." };
+    }
 
     // see MakerTraits.ts
     const makerTraits = MakerTraits.default()
@@ -31,7 +56,6 @@ require('dotenv').config();
         receiver: new Address(maker.address),
     }, makerTraits)
 
-    const domain = getLimitOrderV4Domain(chainId);
     const typedData = order.getTypedData(domain)
     const signature = await maker.signTypedData(
         typedData.domain,
@@ -54,7 +78,7 @@ require('dotenv').config();
         console.log(e);
     }
     
-    // wait a 1.05 seconds after submitting the order to query it
+    // must wait at least 1.05 seconds after submitting the order to query it
     await new Promise(resolve => setTimeout(resolve, 1050));
 
     // get order by hash
