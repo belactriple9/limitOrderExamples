@@ -18,7 +18,6 @@ require('dotenv').config();
     // see MakerTraits.ts
     const makerTraits = MakerTraits.default()
         .withExpiration(expiration)
-        .enablePermit2()
         .allowPartialFills() // If you wish to allow partial fills
         .allowMultipleFills(); // And assuming multiple fills are also okay
 
