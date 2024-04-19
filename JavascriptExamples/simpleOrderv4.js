@@ -86,7 +86,7 @@ const erc20AbiFragment = [
     await new Promise(resolve => setTimeout(resolve, 1050));
 
     // get order by hash
-    const hash = order.getOrderHash(getLimitOrderV4Domain(chainId))
+    const hash = order.getOrderHash(chainId)
     const orderInfo = await api.getOrderByHash(hash);
     console.log('orderInfo', orderInfo);
 })();
