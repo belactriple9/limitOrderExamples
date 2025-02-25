@@ -269,17 +269,30 @@ in javascript these are both valid
 """
 
 # this is the limit order that will be broadcast to the limit order API
+YOUR_KEY = '....' # this should be the 1inch API key
 
 import requests
 import json
 
-url = "https://limit-orders.1inch.io/v4.0/1/limit-order" # 1 is for Ethereum network
+url = "https://api.1inch.dev/orderbook/v4.0/" + str(chain_id)
 
-headers = {'Content-Type': 'application/json'}
+headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + YOUR_KEY
+}
 
 stringified = json.dumps(limit_order)
 
-print(stringified)
+print("Request payload:", stringified)
+
+# send the request with debug try/except
+try:
+    response = requests.post(url, data=stringified, headers=headers)
+    print("Response status code:", response.status_code) # 201 indicates success
+    print("Response text:", response.text)
+except Exception as e:
+    print("Error during request:", str(e))
+
 
 # send the request
 response = requests.post(url, data=stringified, headers=headers)
