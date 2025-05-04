@@ -186,7 +186,11 @@ if not has_extension:
     salt_bytes = current_time.to_bytes(32, 'big')  # Convert the integer timestamp to bytes
     salt = int.from_bytes(w3.keccak(salt_bytes), 'big') & ((1 << 160) - 1)
 else: 
-    salt = int.from_bytes(w3.keccak(hexstr=extension), 'big') & ((1 << 160) - 1)
+    current_time = int(time.time())
+    timestamp_bytes = current_time.to_bytes(8, 'big')  # Shorter, e.g., 8 bytes
+    extension_bytes = bytes.fromhex(extension[2:] if extension.startswith('0x') else extension)
+    combined = timestamp_bytes.rjust(32, b'\x00') + extension_bytes  # 32 bytes high, extension low
+    salt = int.from_bytes(w3.keccak(combined), 'big') & ((1 << 160) - 1)
 
 order_data = {
     "salt": (salt),
