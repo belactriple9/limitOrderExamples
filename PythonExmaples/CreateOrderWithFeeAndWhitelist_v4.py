@@ -356,7 +356,7 @@ should_unwrap_wETH = False      # use when the maker wants the output token in t
 # the following is an example permit for USDC, you'll need to generate this on your own if you want to use permits
 makerPermitData = None # bytes.fromhex('a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000002c9b2DBdbA8A9c969Ac24153f5C1c23CB0e63914000000000000000000000000111111125421ca6dc452d289314280a0f8842a6500000000000000000000000000000000000000000000000000b1a2bc2ec500000000000000000000000000000000000000000000000000000000000068534122000000000000000000000000000000000000000000000000000000000000001cc9c44c49a06b6144b329239a6feaf949773e852f3756abc3f0f01717434ad1a10f6d90f2d563aa3bc6d6aa46084766a5b36367d417c254580b8192f065d69fdd')
 
-makerTraits = build_makerTraits(nullAddress, False, False, False, has_extension, False, True, expiry=expiration, nonce=nonceOrEpoch, series=series)
+makerTraits = build_makerTraits(nullAddress, True, False, False, has_extension, False, True, expiry=expiration, nonce=nonceOrEpoch, series=series)
 
 extension = build_order_extension(
     extension_target=fee_info["extensionAddress"],
